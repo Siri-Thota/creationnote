@@ -1,22 +1,92 @@
-const entertext= document.getElementById("mcd");
-document.getElementById("notebts").addEventListener('click', getNotes);
 
-function getNotes()
-{
-    fetch("http://localhost:3000/notes")
-    .then((res)=>res.json())
+import { fetchData, getCurrentUser, setCurrentUser, setCurrentNote } from "./main.js";
+let enterNote = document.getElementById("npage");
+if(enterNote) enterNote.addEventListener('submit', notef);
+
+
+  function notef(e){
+    e.preventDefault();
+    let notes=document.getElementById('note').value;
+
+    let note = new Note(notes);
+    let user = getCurrentUser();
+    note.userID = user.userID;
+
+    fetchData("/notes/create", note, "POST")
     .then((data) => {
-        
-        data.forEach((note) => {
-            let section = `
-            <div class="detailnotes">
-                <p>${note.text}</p>
-                
-                
-            </div>
-            `
-            entertext.innerHTML+=section;
-        })
+    //setCurrentNote(data);
+    setCurrentNote(data);
+    window.location.href = "note.html";
     })
-    .catch((err)=>console.log(`Error! ${err}`));
+    .catch((err) =>{
+    let p = document.querySelector('.error');
+    p.innerHTML = err.message;
+    })
+
+    const Note1 = new Note(notes);
+    console.log(Note1);
+    window.location.href = "note.html";
+    document.getElementById("npage").reset();
 }
+
+class Note {
+    constructor(note) {
+      this.note = note;
+      
+    }
+  
+    getNote() {
+      return this.note;
+    }
+  }
+
+  let user = getCurrentUser();
+  if(user && enterNote) getNotes();
+
+
+
+// 
+function getNotes(){
+  
+  let user = getCurrentUser();
+   fetchData("/notes/", user,"post")
+   .then((data)=>{
+       let ul=document.getElementById("enterNotes");
+
+       data.forEach((note)=>{
+           let li=document.createElement('li');
+           let text=document.createTextNode(note.note);
+           li.appendChild(text);
+           ul.appendChild(li);
+
+       })
+   })
+   .catch((err)=>console.log(`Error! ${err}`));
+
+   //window.location.href="note.html";
+}
+
+/*
+function setCurrentUser(user) {
+  localStorage.setItem('user', JSON.stringify(user));
+}
+// getting current user function
+// FIX this next class
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem('user'));
+}
+
+// logout function for current user
+function removeCurrentUser() {
+  localStorage.removeItem('user')
+}
+
+ function setCurrentNote(note) {
+  localStorage.setItem('note', JSON.stringify(note));
+}
+
+// getting current note function
+function getCurrentNote() {
+  return JSON.parse(localStorage.getItem('note'));
+}
+*/
